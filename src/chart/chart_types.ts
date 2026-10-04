@@ -2,13 +2,15 @@ import {
   CircleRenderer,
   DetailedRenderer,
   FancyChart,
-  HourglassChart,
   IndiInfo,
   JsonGedcomData,
-  RelativesChart,
   ChartColors as TopolaChartColors,
 } from 'topola';
 import {ChartColors, Ids, PlaceDisplay, Sex} from '../sidepanel/config/config';
+import {
+  ConvergingHourglassChart,
+  ConvergingRelativesChart,
+} from './converging_chart';
 
 /** Supported chart types. */
 export enum ChartType {
@@ -43,14 +45,14 @@ export const chartColors = new Map<ChartColors, TopolaChartColors>([
 export function getChartType(chartType: ChartType) {
   switch (chartType) {
     case ChartType.Hourglass:
-      return HourglassChart;
+      return ConvergingHourglassChart;
     case ChartType.Relatives:
-      return RelativesChart;
+      return ConvergingRelativesChart;
     case ChartType.Fancy:
       return FancyChart;
     default:
       // Fall back to hourglass chart.
-      return HourglassChart;
+      return ConvergingHourglassChart;
   }
 }
 
