@@ -44,6 +44,30 @@ export function pointerToId(pointer: string): string {
   return pointer.substring(1, pointer.length - 1);
 }
 
+/** Returns the declared home person, or the viewer's initial person. */
+export function getMainPersonId(data: TopolaData): string | undefined {
+  const references =
+    data.gedcom.head?.tree.filter(
+      (entry) => entry.tag === '_ROOT' || entry.tag === '_HOME',
+    ) || [];
+  for (const reference of references) {
+    const id = pointerToId(reference.data.trim());
+    if (data.chartData.indis.some((person) => person.id === id)) return id;
+  }
+  const sosaPerson = Object.entries(data.gedcom.indis).find(([, person]) =>
+    person.tree.some(
+      (entry) => entry.tag === '_SOSA' && entry.data.trim() === '1',
+    ),
+  );
+  if (
+    sosaPerson &&
+    data.chartData.indis.some((person) => person.id === sosaPerson[0])
+  ) {
+    return sosaPerson[0];
+  }
+  return data.chartData.indis[0]?.id;
+}
+
 /** Returns a map from individual ID to individual data object. */
 export function idToIndiMap(data: JsonGedcomData): Map<string, JsonIndi> {
   const map = new Map<string, JsonIndi>();

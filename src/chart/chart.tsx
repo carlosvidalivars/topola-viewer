@@ -82,7 +82,11 @@ export function Chart(props: ChartProps) {
       // confusing overlap.
       props.onFirstRender?.();
     }
-    chartWrapper.current.focusPerson(propsWithProcessedData, intl);
+    chartWrapper.current.focusPerson(
+      propsWithProcessedData,
+      intl,
+      props.centerRequest !== prevProps?.centerRequest,
+    );
   });
 
   return (

@@ -6,6 +6,7 @@ import {
   getDescendants,
   getFileName,
   getImageFileEntry,
+  getMainPersonId,
   getName,
   getNonImageFileEntry,
   idToFamMap,
@@ -322,5 +323,53 @@ describe('Media Resolution and Utilities', () => {
       const nonImage = getNonImageFileEntry(objectEntry);
       expect(nonImage?.data).toBe('documents/b.pdf');
     });
+  });
+});
+
+describe('getMainPersonId()', () => {
+  const person = (id: string) => ({id});
+  const entry = (tag: string, data: string) => ({
+    level: 1,
+    tag,
+    data,
+    pointer: '',
+    tree: [],
+  });
+  const data = {
+    chartData: {indis: [person('I1'), person('I2')], fams: []},
+    gedcom: {
+      head: {...entry('HEAD', ''), tree: [entry('_ROOT', '@I2@')]},
+      indis: {},
+      fams: {},
+      other: {},
+    },
+  };
+  it('uses a valid declared home person', () => {
+    expect(getMainPersonId(data)).toBe('I2');
+    expect(
+      getMainPersonId({
+        ...data,
+        gedcom: {
+          ...data.gedcom,
+          head: {...data.gedcom.head, tree: [entry('_HOME', '@I2@')]},
+        },
+      }),
+    ).toBe('I2');
+  });
+  it('ignores missing references and uses the first person', () => {
+    expect(
+      getMainPersonId({
+        ...data,
+        gedcom: {
+          ...data.gedcom,
+          head: {...data.gedcom.head, tree: [entry('_ROOT', '@missing@')]},
+        },
+      }),
+    ).toBe('I1');
+  });
+  it('returns undefined for an empty file', () => {
+    expect(
+      getMainPersonId({...data, chartData: {indis: [], fams: []}}),
+    ).toBeUndefined();
   });
 });

@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Loader, SidebarPushable, SidebarPusher} from 'semantic-ui-react';
+import {Icon, Loader, SidebarPushable, SidebarPusher} from 'semantic-ui-react';
 import {IndiInfo} from 'topola';
 import {Chart} from '../chart/chart';
 import {
@@ -24,7 +24,7 @@ import {TopBar} from '../menu/top_bar';
 import {Config, Ids, Sex} from '../sidepanel/config/config';
 import {SidePanel} from '../sidepanel/side-panel';
 import {analyticsEvent} from '../util/analytics';
-import {idToIndiMap, TopolaData} from '../util/gedcom_util';
+import {getMainPersonId, idToIndiMap, TopolaData} from '../util/gedcom_util';
 
 export enum AppState {
   INITIAL,
@@ -115,6 +115,11 @@ export function ViewPage() {
     updateChartWithConfig(config, data);
   }, [config, data]);
 
+  const [centerRequest, setCenterRequest] = useState(0);
+  const mainPersonId = useMemo(
+    () => (data ? getMainPersonId(data) : undefined),
+    [data],
+  );
   const [focusedPerson, setFocusedPerson] = useState<IndiInfo>();
   const sourceKey = JSON.stringify(sourceSpec);
   useEffect(() => {
@@ -200,6 +205,7 @@ export function ViewPage() {
           data={data.chartData}
           selection={selection}
           focusedPerson={focusedPerson}
+          centerRequest={centerRequest}
           onSelection={onSelection}
           onFirstRender={() => setLoadingStatus('')}
         />
@@ -210,6 +216,7 @@ export function ViewPage() {
         data={data.chartData}
         selection={selection}
         focusedPerson={focusedPerson}
+        centerRequest={centerRequest}
         chartType={chartType}
         onSelection={onSelection}
         onDetailSelection={onDetailSelection}
@@ -251,7 +258,31 @@ export function ViewPage() {
                 onToggle={onToggleSidePanel}
                 onConfigChange={onConfigChange}
               />
-              <SidebarPusher>{renderChart(selection)}</SidebarPusher>
+              <SidebarPusher>
+                {renderChart(selection)}
+                <button
+                  type="button"
+                  className="center-main-person"
+                  aria-label={intl.formatMessage({
+                    id: 'chart.center_main_person',
+                    defaultMessage: 'Center on main person',
+                  })}
+                  title={intl.formatMessage({
+                    id: 'chart.center_main_person',
+                    defaultMessage: 'Center on main person',
+                  })}
+                  disabled={!mainPersonId}
+                  onClick={() => {
+                    if (!mainPersonId) return;
+                    const person = {id: mainPersonId, generation: 0};
+                    setFocusedPerson(person);
+                    onRootSelection(person);
+                    setCenterRequest((request) => request + 1);
+                  }}
+                >
+                  <Icon name="crosshairs" />
+                </button>
+              </SidebarPusher>
             </SidebarPushable>
           </div>
         );

@@ -24,6 +24,7 @@ export interface ChartProps {
   data: JsonGedcomData;
   selection: IndiInfo;
   focusedPerson?: IndiInfo;
+  centerRequest?: number;
   chartType: ChartType;
   onSelection: (indiInfo: IndiInfo) => void;
   onDetailSelection: (indiInfo: IndiInfo) => void;

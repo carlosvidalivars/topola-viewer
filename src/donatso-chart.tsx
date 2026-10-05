@@ -18,6 +18,7 @@ export interface DonatsoChartProps {
   data: JsonGedcomData;
   selection: IndiInfo;
   focusedPerson?: IndiInfo;
+  centerRequest?: number;
   onSelection: (indiInfo: IndiInfo) => void;
   /** Called once after the initial chart render completes. */
   onFirstRender?: () => void;
@@ -69,6 +70,7 @@ class ChartWrapper {
   private intl?: IntlShape;
   private rootId?: string;
   private focusedId?: string;
+  private centerRequest?: number;
   onSelection?: DonatsoChartProps['onSelection'];
 
   initializeChart(props: DonatsoChartProps, intl: IntlShape) {
@@ -125,7 +127,10 @@ class ChartWrapper {
       props.data !== this.data ||
       props.selection.id !== this.rootId ||
       intl !== this.intl;
-    const focusChanged = props.focusedPerson?.id !== this.focusedId;
+    const focusChanged =
+      props.focusedPerson?.id !== this.focusedId ||
+      props.centerRequest !== this.centerRequest;
+    this.centerRequest = props.centerRequest;
     this.focusedId = props.focusedPerson?.id;
     if (treeChanged) {
       this.data = props.data;
