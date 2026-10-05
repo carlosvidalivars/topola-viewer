@@ -1,4 +1,4 @@
-import {useCallback, useMemo} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Loader, SidebarPushable, SidebarPusher} from 'semantic-ui-react';
 import {IndiInfo} from 'topola';
@@ -13,6 +13,7 @@ import {ChartType} from '../chart/chart_types';
 import {ErrorMessage, ErrorPopup} from '../components/error_display';
 import {ProgressPill} from '../components/progress_pill';
 import {DataSourceEnum} from '../datasource/data_source';
+import {PRIVATE_ID_PREFIX} from '../datasource/wikitree';
 import {DonatsoChart} from '../donatso-chart';
 import {useGenealogyLoader} from '../hooks/use_genealogy_loader';
 import {useGoogleDriveAuth} from '../hooks/use_google_drive_auth';
@@ -67,8 +68,8 @@ export function ViewPage() {
     config,
     selection: urlSelection,
     detail: urlDetail,
-    onSelection,
-    onDetailSelection,
+    onSelection: onRootSelection,
+    onDetailSelection: onUrlDetailSelection,
     onToggleSidePanel,
     onConfigChange,
   } = useUrlState();
@@ -114,7 +115,38 @@ export function ViewPage() {
     updateChartWithConfig(config, data);
   }, [config, data]);
 
-  useWebMcpBridge(data, detailIndi, onSelection);
+  const [focusedPerson, setFocusedPerson] = useState<IndiInfo>();
+  const sourceKey = JSON.stringify(sourceSpec);
+  useEffect(() => {
+    setFocusedPerson(undefined);
+  }, [sourceKey]);
+  useEffect(() => {
+    setFocusedPerson((person) =>
+      person?.id === urlSelection?.id ? person : undefined,
+    );
+  }, [urlSelection?.id, urlSelection?.generation]);
+
+  const onSelection = useCallback(
+    (person: IndiInfo) => {
+      if (person.id.startsWith(PRIVATE_ID_PREFIX)) return;
+      if (focusedPerson?.id === person.id) {
+        onRootSelection(person);
+      } else {
+        setFocusedPerson(person);
+      }
+    },
+    [focusedPerson, onRootSelection],
+  );
+
+  const onDetailSelection = useCallback(
+    (person: IndiInfo) => {
+      setFocusedPerson(undefined);
+      onUrlDetailSelection(person);
+    },
+    [onUrlDetailSelection],
+  );
+
+  useWebMcpBridge(data, focusedPerson?.id || detailIndi, onRootSelection);
 
   function onPrint() {
     analyticsEvent('print');
@@ -167,6 +199,7 @@ export function ViewPage() {
         <DonatsoChart
           data={data.chartData}
           selection={selection}
+          focusedPerson={focusedPerson}
           onSelection={onSelection}
           onFirstRender={() => setLoadingStatus('')}
         />
@@ -176,6 +209,7 @@ export function ViewPage() {
       <Chart
         data={data.chartData}
         selection={selection}
+        focusedPerson={focusedPerson}
         chartType={chartType}
         onSelection={onSelection}
         onDetailSelection={onDetailSelection}
@@ -211,7 +245,7 @@ export function ViewPage() {
             <SidebarPushable>
               <SidePanel
                 data={data}
-                selectedIndiId={detailIndi || selection.id}
+                selectedIndiId={focusedPerson?.id || detailIndi || selection.id}
                 config={config}
                 expanded={showSidePanel}
                 onToggle={onToggleSidePanel}

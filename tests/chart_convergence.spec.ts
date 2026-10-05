@@ -55,16 +55,28 @@ for (const view of ['hourglass', 'relatives']) {
       .screenshot({path: testInfo.outputPath('converged-tree.png')});
 
     await chart.getByText('Sharedchild', {exact: true}).click({force: true});
+    await expect(chart.locator('.person-selected')).toContainText(
+      'Sharedchild',
+    );
+    await chart.getByText('Sharedchild', {exact: true}).click({force: true});
     await expect(page).toHaveURL(/indi=I9/);
     await expect(
       chart.getByText('Sharedgrandchild', {exact: true}),
     ).toHaveCount(1);
+    await expect(chart).toHaveAttribute('aria-busy', 'false');
     // Repeated ancestors are still present when looking upwards from the child.
     await expect(chart.getByText('Grandfather', {exact: true})).toHaveCount(2);
     await chart
       .getByText('Grandfather', {exact: true})
       .first()
-      .click({force: true});
+      .dispatchEvent('click');
+    await expect(chart.locator('.person-selected').first()).toContainText(
+      'Grandfather',
+    );
+    await chart
+      .getByText('Grandfather', {exact: true})
+      .first()
+      .dispatchEvent('click');
     await expect(page).toHaveURL(/indi=I1/);
     await expect(chart.getByText('Sharedchild', {exact: true})).toHaveCount(1);
     await expect(

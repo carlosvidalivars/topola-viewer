@@ -82,6 +82,7 @@ export function Chart(props: ChartProps) {
       // confusing overlap.
       props.onFirstRender?.();
     }
+    chartWrapper.current.focusPerson(propsWithProcessedData, intl);
   });
 
   return (

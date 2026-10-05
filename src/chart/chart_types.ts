@@ -23,6 +23,7 @@ export enum ChartType {
 export interface ChartProps {
   data: JsonGedcomData;
   selection: IndiInfo;
+  focusedPerson?: IndiInfo;
   chartType: ChartType;
   onSelection: (indiInfo: IndiInfo) => void;
   onDetailSelection: (indiInfo: IndiInfo) => void;

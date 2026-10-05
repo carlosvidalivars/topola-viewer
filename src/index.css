@@ -431,3 +431,9 @@ div.zoom {
     right: 0;
   }
 }
+#chart .person-selected > rect,
+#chart .person-selected > circle {
+  stroke: #1769d2;
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 4px rgba(23, 105, 210, 0.5));
+}

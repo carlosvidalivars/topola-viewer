@@ -37,7 +37,18 @@ test.describe('Search functionality and global shortcut', () => {
     await searchInput.fill('chik');
     await expect(page.locator('.results')).toContainText('Chike');
     await searchInput.press('Enter');
-    await expect(page.locator('#content')).toContainText('Chike');
+    await expect(page.locator('#chart .person-selected')).toContainText(
+      'Chike',
+    );
+    await expect(page).not.toHaveURL(/indi=/);
+    // A person outside the current tree appears as an isolated highlighted card.
+    await expect(page.locator('#chart')).toContainText('Bonifacy');
+    await page
+      .locator('#chart .person-selected')
+      .getByText('Chike')
+      .click({force: true});
+    await expect(page).toHaveURL(/indi=/);
+    await expect(page.locator('#focusPreview')).toHaveCount(0);
   });
 
   test('Viewport switching: Search query is preserved when resizing between desktop and mobile', async ({
